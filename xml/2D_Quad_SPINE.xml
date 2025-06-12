@@ -1,0 +1,104 @@
+<mujoco model="2D_Walker">
+    <include file="./visual.xml"/>
+    <include file="./skybox.xml"/>
+    <include file="./materials.xml"/>    
+    <compiler angle="degree" coordinate="local"/>
+    <option timestep="0.005" integrator="RK4" gravity="0 0 -9.81"/>
+
+
+<!-- condim는 3차원 friction을 쓰겠다는 뜻 -->
+    <default> 
+        <geom friction="1 1 1"
+
+        density="1000"
+        margin="0.002"
+        condim="3"   
+        contype="1"
+        conaffinity="1"/>
+
+
+    </default>
+
+    <worldbody>
+        <camera name="sideview" pos="3 0 1" euler="0 90 0" fovy="45"/>
+
+        <light name="light" pos="0 0 0"/>
+        <!-- Ground -->
+        <geom name="floor" size="30 30 .2" type="plane" material="grid" friction = "1 0.005 0.0001"/>
+
+            <!-- Torso front -->
+        <body name="torso_front" pos="0 0 0.">
+            <inertial pos="0.125 0 0" mass="10" diaginertia="0.0045 0.0339 0.0339"/>
+            <joint name="rootx" type="slide" axis="1 0 0"/>
+            <joint name="rootz" type="slide" axis="0 0 1"/>
+            <joint name="rootyaw" type="hinge" axis="0 1 0"/>
+            <geom type="capsule" fromto="0 0 0 0.25 0 0" size="0.03" rgba="0.3 0.3 0.3 1"/>
+            <site name="imu" pos="0.125 0 0" size="0.01" rgba="1 0 0 1"/>
+
+            <!-- Front hip -->
+            <body name="front_thigh" pos="0.25 0 0" euler="0 90 0">
+                <inertial pos="0 0 -0.125" euler = "0 0 0" mass="1.5" diaginertia="0.0084 0.0084 0.00047"/>
+                <joint name="front_hip" type="hinge" axis="0 -1 0" limited="true" range="0 180"/>
+                <geom type="capsule" fromto="0 0 0 0 0 -0.25" size="0.025" rgba="0.1 0.1 0.1 1"/>
+
+                <!-- Front knee -->
+                <body name="front_shin" pos="0 0 -0.25">
+                    <inertial pos="0 0 -0.125" mass="1.0" diaginertia="0.0052 0.0052 0.0002"/>
+                    <joint name="front_knee" type="hinge" axis="0 -1 0" limited="true" range="0 180"/>
+                    <geom type="capsule" fromto="0 0 0 0 0 -0.25" size="0.02" rgba="0.1 0.1 0.1 1"/>
+                    <site name="front_foot" pos="0 0 -0.25" size="0.01" rgba="0 1 0 1"/>
+
+                </body>
+            </body>
+
+            <!-- Torso back -->
+            <body name="torso_back" pos="0 0 0">
+                <inertial pos="-0.125 0 0" mass="10" diaginertia="0.0045 0.0339 0.0339"/>
+                <geom type="capsule" fromto="0 0 0 -0.25 0 0" size="0.03" rgba="0.3 0.3 0.3 1"/>
+                <joint name="waist" type="hinge" axis="0 -1 0" limited="true" range="-30 30"/>
+
+                <!-- Back hip -->
+                <body name="back_thigh" pos="-0.25 0 0" euler="0 90 0">
+                    <inertial pos="0 0 -0.125" mass="1.5" diaginertia="0.0084 0.0084 0.00047"/>
+                    <joint name="back_hip" type="hinge" axis="0 -1 0" limited="true" range="0 180"/>
+                    <geom type="capsule" fromto="0 0 0 0 0 -0.25" size="0.025" rgba="0.1 0.1 0.1 1"/>
+
+                    <!-- Back knee -->
+                    <body name="back_shin" pos="0 0 -0.25">
+                        <inertial pos="0 0 -0.125" mass="1.0" diaginertia="0.0052 0.0052 0.0002"/>
+                        <joint name="back_knee" type="hinge" axis="0 -1 0" limited="true" range="0 180"/>
+                        <geom type="capsule" fromto="0 0 0 0 0 -0.25" size="0.02" rgba="0.1 0.1 0.1 1"/>
+                        <site name="back_foot" pos="0 0 -0.25" size="0.01" rgba="0 1 0 1"/>
+
+                    </body>
+                </body>
+            </body>
+        </body>
+
+    </worldbody>
+
+    <actuator>
+        <motor joint="front_hip" ctrlrange="-50 50" gear="1"/>
+        <motor joint="front_knee" ctrlrange="-50 50" gear="1"/>
+        <motor joint="waist" ctrlrange="-50 50" gear="1"/>
+        <motor joint="back_hip" ctrlrange="-50 50" gear="1"/>
+        <motor joint="back_knee" ctrlrange="-50 50" gear="1"/>
+    </actuator>
+
+
+    <sensor>
+        <!-- IMU on torso_front -->
+        <accelerometer site="imu" name="imu_accl"/>
+        <gyro          site="imu" name="imu_gyro"/>
+        <framepos     name="Body_pos"  objtype="site" objname="imu" />
+        <framelinvel  name="Body_vel"  objtype="site" objname="imu" />
+
+        <!-- Force sensors -->
+        <force site="front_foot" name="front_foot_force"/>
+        <force site="back_foot"  name="back_foot_force"/>
+    </sensor>
+
+</mujoco>
+
+
+
